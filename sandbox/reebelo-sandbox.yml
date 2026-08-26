@@ -1,0 +1,63 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+summary: >-
+  Reebelo publishes a second, non-production base URL for its vendor API alongside the
+  production one, on a separate .blue domain. The documentation presents the two side
+  by side as the environments an integrator targets. There is no self-service sandbox
+  signup, no test-mode key prefix, no published test fixtures and no time simulation —
+  access to the staging environment requires a Reebelo-issued key exactly as
+  production does.
+environments:
+- name: production
+  base_url: https://a.reebelo.com
+  console: https://cobalt.reebelo.com/
+  probed_status: 403
+  note: AWS API Gateway; unauthenticated requests return {"message":"Forbidden"}.
+- name: staging
+  base_url: https://a.reebelo.blue
+  console: https://cobalt.reebelo.blue/
+  probed_status: 403
+  note: >-
+    Live and reachable, behaving identically to production at the edge. Published in
+    the Custom API reference as a base URL an integrator can target.
+key_model:
+  test_vs_live_prefix: none
+  detail: >-
+    Reebelo does not distinguish test from live credentials by prefix or by key shape.
+    The documented header is the same x-api-key in both environments, described only as
+    "to be provided by Reebelo". An integrator cannot tell from a key which environment
+    it addresses — the environment is selected by base URL alone.
+  provisioning: >-
+    Not self-service. Staging keys, like production keys, are issued by a Reebelo
+    account manager or Reebelo support on request.
+test_data:
+  test_cards: not applicable — Reebelo's vendor API carries no payment surface
+  magic_identifiers: none published
+  fixtures: none published
+  triggers: none published
+  note: >-
+    The reference contains illustrative example values only (sku "testingsku", offer
+    name "IP11-BLACK-128-GradeB", orderNumber 1234, IMEI "350750724344136", carrier
+    "DHL"). These are documentation placeholders, not reserved test identifiers, and
+    are NOT guaranteed to resolve in the staging environment.
+time_simulation:
+  supported: false
+data_reset:
+  documented: false
+gaps:
+- >-
+  No self-service sandbox: an integrator cannot write or test a single line against
+  Reebelo without first obtaining a key by email. This gates evaluation behind a
+  human step.
+- >-
+  No published seeded data in staging, so an integrator cannot verify read endpoints
+  without Reebelo first provisioning offers and orders against their vendor account.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200
+- url: https://a.reebelo.blue/
+  status: 403
+- url: https://cobalt.reebelo.blue/
+  status: 200

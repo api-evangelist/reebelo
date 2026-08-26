@@ -1,18 +1,77 @@
 aid: reebelo
 name: Reebelo
-description: 'Reebelo is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Reebelo is a marketplace for certified refurbished consumer technology
+  — smartphones, laptops, tablets, smartwatches, gaming and home electronics — sold
+  by a vetted network of third-party refurbishers at up to 70% below new, with a
+  12-month warranty and a 30-day trial. Founded in 2019 and operating in the United
+  States, Australia, New Zealand and Singapore, Reebelo positions refurbished tech
+  as the sustainable alternative to new-device purchase. Its developer surface is
+  seller-facing rather than buyer-facing: the Cobalt vendor back-office publishes a
+  REST integration API on https://a.reebelo.com that lets a refurbisher list and
+  reprice offers, pull orders, push carrier tracking and IMEI numbers, and upload
+  seller invoices, alongside hosted-CSV feed and order-forwarding webhook
+  alternatives for vendors without API resources.'
+image: https://edge.reebelo.com/images/opengraph.png
 url: https://raw.githubusercontent.com/api-evangelist/reebelo/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-26'
 modified: '2026-08-26'
 tags:
-- Company
-apis: []
+- Refurbished Electronics
+- Marketplace
+- E-Commerce
+- Consumer Electronics
+- Reverse Logistics
+- Circular Economy
+- Retail
+- Inventory
+- Orders
+- Seller Integration
+apis:
+- aid: reebelo-vendor-api
+  name: Reebelo Vendor Integration API (Cobalt)
+  description: 'The seller-side REST API behind Reebelo''s Cobalt vendor back-office.
+    Authenticated with a Reebelo-issued x-api-key header, it exposes offer
+    management (list offers, look up an offer by SKU, create/update offers with
+    price, stock and minimum price), order retrieval (paged and sorted, with
+    orderDate/fulfillmentDate/dispatchDate ranges), order tracking updates (carrier
+    and tracking number), IMEI capture per line item, and a presigned-URL flow for
+    uploading seller invoice PDFs. Reebelo also forwards new orders to a
+    vendor-hosted webhook endpoint, and offers hosted-CSV product and tracking
+    feeds as a no-API alternative.'
+  humanURL: https://cobalt.reebelo.com/documentation/custom-api
+  baseURL: https://a.reebelo.com
+  tags:
+  - Offers
+  - Orders
+  - Tracking
+  - Inventory
+  - Invoices
+  properties:
+  - type: Documentation
+    url: https://cobalt.reebelo.com/documentation/custom-api
+  - type: APIReference
+    url: https://cobalt.reebelo.com/documentation/custom-api
+  - type: GettingStarted
+    url: https://cobalt.reebelo.com/documentation/home
+  - type: Authentication
+    url: authentication/reebelo-authentication.yml
+  - type: Conventions
+    url: conventions/reebelo-conventions.yml
+  - type: Idempotency
+    url: conventions/reebelo-conventions.yml
+  - type: ErrorCatalog
+    url: errors/reebelo-error-codes.yml
+  - type: RateLimits
+    url: rate-limits/reebelo-rate-limits.yml
+  - type: Sandbox
+    url: sandbox/reebelo-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/reebelo-webhooks.yml
+  - type: DataModel
+    url: data-model/reebelo-data-model.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +79,60 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://www.nasdaqprivatemarket.com/
+  url: https://reebelo.com/
+- type: DeveloperPortal
+  url: https://cobalt.reebelo.com/
+- type: Documentation
+  url: https://cobalt.reebelo.com/documentation/home
+- type: APIReference
+  url: https://cobalt.reebelo.com/documentation/custom-api
+- type: GettingStarted
+  url: https://cobalt.reebelo.com/documentation/home
+- type: Login
+  url: https://cobalt.reebelo.com/
+- type: Support
+  url: https://reebelo.com/help
+- type: HelpCenter
+  url: https://help.reebelo.com/hc/en-us
+- type: TermsOfService
+  url: https://reebelo.com/policies/terms-of-service
+- type: PrivacyPolicy
+  url: https://reebelo.com/policies/privacy-policy
+- type: Plans
+  url: plans/reebelo-plans-pricing.yml
+- type: Authentication
+  url: authentication/reebelo-authentication.yml
+- type: Conformance
+  url: conformance/reebelo-conformance.yml
+- type: Lifecycle
+  url: lifecycle/reebelo-lifecycle.yml
+- type: LLMsTxt
+  url: llms/reebelo-llms.txt
+- type: Packages
+  url: packages/reebelo-packages.yml
+- type: DomainSecurity
+  url: security/reebelo-domain-security.yml
+x-enrichment:
+  date: '2026-08-26'
+  status: enriched
+  artifacts_added: 15
+  pass: local-v1
+x-coverage:
+  state: covered
+  reason: no-machine-readable-spec
+  detail: >-
+    Reebelo publishes a complete, genuine REST API reference for its Cobalt vendor
+    integration, but ships it only as JSX inside the docs single-page-app JavaScript
+    bundle (cobalt.reebelo.com/assets/index.8b57822b.js) — there is no OpenAPI,
+    Swagger, GraphQL or AsyncAPI document on any Reebelo host, and the SPA answers 200
+    with an HTML shell for every /openapi.json and /.well-known/* path.
+  evidence:
+  - url: https://cobalt.reebelo.com/documentation/custom-api
+    status: 200
+  - url: https://cobalt.reebelo.com/openapi.json
+    status: 200
+  - url: https://a.reebelo.com/openapi.json
+    status: 403
+  - url: https://reebelo.com/.well-known/security.txt
+    status: 404
+  checked: '2026-08-26'

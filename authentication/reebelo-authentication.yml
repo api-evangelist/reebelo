@@ -1,0 +1,70 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+docs: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+base_urls:
+  production: https://a.reebelo.com
+  staging: https://a.reebelo.blue
+summary: >-
+  Reebelo's vendor API uses a single static API key passed in an x-api-key request
+  header. The key is issued by Reebelo — the documentation states it is "to be
+  provided by Reebelo" and third-party integrators are told to email Reebelo support
+  to request their token. There is no self-service key provisioning, no OAuth, and no
+  published scope model. One endpoint (seller invoice upload) instead takes an
+  Authorization: Bearer credential.
+schemes:
+- id: x-api-key
+  type: apiKey
+  in: header
+  name: x-api-key
+  description: >-
+    Reebelo-issued static API key. Sent on every sockets/* request alongside
+    content-type: application/json. Documented request header example is
+    {"content-type":"application/json", "x-api-key":"xxxxxx"}.
+  applies_to:
+  - GET sockets/offers
+  - POST sockets/offers/update
+  - GET sockets/orders
+  - PUT sockets/orders/track
+  - PUT sockets/orders/imei
+  provisioning: >-
+    Issued by Reebelo. Not self-service — a vendor receives the key from their Reebelo
+    account manager by email, and integration partners are instructed to email Reebelo
+    support to request it.
+  rotation: not documented
+  expiry: not documented
+- id: bearer
+  type: http
+  scheme: bearer
+  in: header
+  name: Authorization
+  description: >-
+    Bearer token used on the seller invoice presigned-upload endpoint. Documented
+    header example is {"content-type":"application/json", "Authorization":"Bearer xxxxxx"}.
+  applies_to:
+  - POST cobalt/orders/{orderNumber}/invoices/upload-url
+  provisioning: not documented
+oauth2: false
+openid_connect: false
+mutual_tls: false
+scopes: none published
+notes:
+- >-
+  The two credential styles are not reconciled in the documentation: the offer/order
+  surface is x-api-key and the invoice-upload surface is Authorization: Bearer. An
+  integrator must hold both to cover the full flow.
+- >-
+  a.reebelo.com is an AWS API Gateway. Unauthenticated requests return HTTP 403 with
+  {"message":"Forbidden"} at the edge, or {"message":"Missing Authentication Token"}
+  for an unmatched route — neither is an RFC 7235 challenge, so there is no
+  WWW-Authenticate header to discover the scheme from.
+- >-
+  Cobalt back-office (human) accounts are separate from API keys and are subject to a
+  90-day password expiry policy stated in the Cobalt login flow.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200
+  note: Documentation content is served inside the SPA JavaScript bundle (/assets/index.8b57822b.js)
+- url: https://a.reebelo.com/
+  status: 403

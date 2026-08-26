@@ -1,0 +1,170 @@
+generated: '2026-08-26'
+method: derived
+source: https://cobalt.reebelo.com/documentation/custom-api
+note: >-
+  Derived from the request and response payloads published in Reebelo's Custom API
+  reference. Reebelo ships no OpenAPI, so this graph is reconstructed from documented
+  example bodies and field lists rather than from components.schemas. Fields not
+  appearing in a published example are not listed — this is a floor, not a complete
+  schema.
+api: Reebelo Vendor Integration API (Cobalt)
+entities:
+- name: Offer
+  description: >-
+    A vendor's listing of a specific refurbished device configuration, keyed on the
+    vendor's own SKU. The unit of catalogue and pricing sync.
+  key: sku
+  endpoints:
+  - GET sockets/offers
+  - POST sockets/offers/update
+  fields:
+  - name: sku
+    type: string
+    required: true
+    note: Required to create or update. The natural key for the upsert.
+    example: testingsku
+  - name: name
+    type: string
+    required: on create
+    note: >-
+      Required to create an offer, optional to update. Encodes model, colour, storage
+      and grade in a single string.
+    example: IP11-BLACK-128-GradeB
+  - name: price
+    type: number
+    required: false
+  - name: stock
+    type: integer
+    required: false
+  - name: minPrice
+    type: number
+    required: false
+    note: Floor price, presumably for Reebelo-side repricing.
+- name: Order
+  description: >-
+    A customer purchase placed on Reebelo against one or more of a vendor's offers.
+    Retrieved by the vendor and forwarded to the vendor's webhook endpoint.
+  key: orderNumber
+  alternate_keys:
+  - name
+  endpoints:
+  - GET sockets/orders
+  - PUT sockets/orders/track
+  - PUT sockets/orders/imei
+  - POST cobalt/orders/{orderNumber}/invoices/upload-url
+  fields:
+  - name: orderNumber
+    type: integer
+    example: 1234
+  - name: name
+    type: string
+    note: Human-facing order name, format "#Axxxxx"
+    example: '#A12345'
+  - name: carrier
+    type: string
+    example: DHL
+  - name: trackingNumber
+    type: string
+    example: abcdef123456
+  - name: total_line_items_price
+    type: number
+    note: Before discount. Present on the forwarded webhook payload.
+  - name: total_price
+    type: number
+  - name: shipping_address
+    type: object
+  timestamps:
+  - orderDate
+  - fulfillmentDate
+  - dispatchDate
+  note: >-
+    The three timestamps are not shown in a published payload but are exposed as sortBy
+    dimensions on GET sockets/orders, so they exist on the resource.
+- name: LineItem
+  description: A single unit line within an order, mapping back to a vendor SKU.
+  key: id
+  fields:
+  - name: id
+    type: integer
+    example: 4568923
+  - name: sku
+    type: string
+  - name: quantity
+    type: integer
+  - name: price
+    type: number
+  - name: imeiNumbers
+    type: array of string
+    note: >-
+      Device identifiers captured per line item. Written via PUT sockets/orders/imei or
+      alongside tracking via PUT sockets/orders/track.
+    example: '350750724344136'
+- name: Invoice
+  description: A seller invoice PDF attached to an order.
+  key: orderNumber
+  endpoints:
+  - POST cobalt/orders/{orderNumber}/invoices/upload-url
+  fields:
+  - name: signedUrl
+    type: string (URL)
+    note: >-
+      Presigned upload target returned by the mint call; the PDF bytes are then PUT to
+      it with Content-Type application/pdf.
+  upload_flow:
+  - step: 1
+    call: POST cobalt/orders/{orderNumber}/invoices/upload-url
+    auth: Authorization Bearer
+    returns: '{"signedUrl":"https://..."}'
+  - step: 2
+    call: PUT <signedUrl>
+    headers: '{"Content-Type":"application/pdf"}'
+    body: raw PDF bytes
+- name: Vendor
+  description: >-
+    The selling refurbisher. Not exposed as a resource — it is implied by the API key
+    and surfaces only as an error condition.
+  endpoints: []
+  note: >-
+    There is no vendor/account/me endpoint. A vendor's own identity, status and
+    entitlements are not readable through the API; the only signal is the
+    "vendor_deactivated" reason on an offers-update response.
+relationships:
+- from: Order
+  to: LineItem
+  type: has_many
+  via: line_items
+- from: LineItem
+  to: Offer
+  type: belongs_to
+  via: sku
+  note: >-
+    Join is on the vendor's SKU string, not on a Reebelo-issued offer id. There is no
+    surrogate offer identifier in the published payloads.
+- from: Order
+  to: Invoice
+  type: has_many
+  via: orderNumber (path parameter)
+- from: Offer
+  to: Vendor
+  type: belongs_to
+  via: implicit (the x-api-key identifies the vendor)
+- from: Order
+  to: Vendor
+  type: belongs_to
+  via: implicit (the x-api-key scopes the order collection)
+id_conventions:
+  offer: vendor-supplied SKU string; no Reebelo-issued id exposed
+  order: integer orderNumber, plus a "#A"-prefixed display name
+  line_item: integer id, Reebelo-issued
+  prefixes: none — no typed id prefixes are used anywhere in the surface
+observations:
+- >-
+  The forwarded webhook payload is a Shopify Order document, while the API's own order
+  representation uses orderNumber/carrier/trackingNumber. The two projections of Order
+  are not field-aligned, so an integrator must map between them.
+- >-
+  No customer entity is exposed on the API read path; customer data reaches the vendor
+  only through shipping_address on the forwarded webhook payload.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200

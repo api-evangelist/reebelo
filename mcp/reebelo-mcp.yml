@@ -1,0 +1,146 @@
+generated: '2026-08-26'
+method: derived
+source: https://cobalt.reebelo.com/documentation/custom-api
+status: candidate
+summary: >-
+  Reebelo publishes no MCP server. No hosted endpoint, no stdio package on any
+  registry, no reference in the developer documentation, and no agent card on any
+  Reebelo host. The tool list below is a CANDIDATE derived from the documented REST
+  operations of the vendor API — it describes what an MCP server for Reebelo could
+  expose, not anything Reebelo ships.
+deployment:
+  mode: none
+  auth: api-key
+  verified: searched
+  note: >-
+    Searched npm, PyPI and RubyGems for a Reebelo MCP package (no results), the GitHub
+    org github.com/reebelo (404 — no organization exists), and probed
+    /.well-known/agent-card.json and /.well-known/agent.json on reebelo.com,
+    cobalt.reebelo.com and a.reebelo.com. No endpoint URL is asserted because none
+    exists; auth is recorded as api-key because that is what any such server would have
+    to carry to reach a.reebelo.com.
+candidate_tools:
+- name: list_offers
+  description: List the vendor's offers on Reebelo, paginated.
+  rest: GET sockets/offers
+  inputs:
+  - name: page
+    type: integer
+    default: 1
+  - name: pageSize
+    type: integer
+    default: 20
+    max: 50
+  consequence: read
+- name: get_offer_by_sku
+  description: Retrieve a single offer by the vendor's SKU.
+  rest: GET sockets/offers?search={sku}
+  inputs:
+  - name: sku
+    type: string
+    required: true
+  consequence: read
+- name: upsert_offers
+  description: >-
+    Create or update offers. Price, stock and minPrice changes propagate to the Reebelo
+    storefront and are immediately customer-visible.
+  rest: POST sockets/offers/update
+  inputs:
+  - name: data
+    type: array of {sku, name?, price?, stock?, minPrice?}
+    required: true
+  consequence: write
+  reversible: by re-submitting prior values; no undo endpoint
+  agent_note: >-
+    High consequence — this sets the public sale price of live listings. An agent should
+    read the current offer first so the prior values can be restored.
+- name: list_orders
+  description: List orders placed against the vendor, with sorting and a time range.
+  rest: GET sockets/orders
+  inputs:
+  - name: page
+    type: integer
+    default: 1
+  - name: pageSize
+    type: integer
+    default: 20
+    max: 50
+  - name: sortBy
+    type: string
+    enum:
+    - orderDate-desc
+    - orderDate-asc
+    - fulfillmentDate-desc
+    - fulfillmentDate-asc
+    - dispatchDate-desc
+    - dispatchDate-asc
+  - name: from
+    type: string (ISO 8601)
+  - name: until
+    type: string (ISO 8601)
+  consequence: read
+- name: get_order
+  description: Retrieve a single order by order number.
+  rest: GET sockets/orders?search={orderNumber}
+  inputs:
+  - name: orderNumber
+    type: string
+    required: true
+  consequence: read
+- name: track_order
+  description: Attach carrier and tracking number (and optionally IMEIs) to an order.
+  rest: PUT sockets/orders/track
+  inputs:
+  - name: orderNumber
+    type: integer
+    required: true
+  - name: carrier
+    type: string
+    required: true
+  - name: trackingNumber
+    type: string
+    required: true
+  - name: lineItems
+    type: array of {id, quantity, imeiNumbers}
+  consequence: write
+  reversible: overwrite only
+- name: update_order_imei
+  description: Record IMEI numbers against an order's line items.
+  rest: PUT sockets/orders/imei
+  inputs:
+  - name: orderNumber
+    type: integer
+    required: true
+  - name: lineItems
+    type: array of {id, imeiNumbers}
+    required: true
+  consequence: write
+  reversible: overwrite only
+- name: create_invoice_upload_url
+  description: >-
+    Mint a presigned URL for uploading a seller invoice PDF against an order. Uses
+    Authorization Bearer rather than x-api-key.
+  rest: POST cobalt/orders/{orderNumber}/invoices/upload-url
+  inputs:
+  - name: orderNumber
+    type: string
+    required: true
+  consequence: write
+out_of_scope:
+- capability: cancel or replace an order
+  reason: >-
+    Reebelo states no API exists — "There is not yet a general API integration for
+    cancelations or replacements." Must not be exposed as a tool.
+probes:
+- url: https://reebelo.com/.well-known/agent-card.json
+  status: 404
+- url: https://cobalt.reebelo.com/.well-known/agent-card.json
+  status: 200
+  note: SPA shell HTML, not an agent card — rejected
+- url: https://a.reebelo.com/.well-known/agent-card.json
+  status: 403
+- url: https://api.github.com/orgs/reebelo
+  status: 404
+- url: https://registry.npmjs.org/-/v1/search?text=reebelo
+  status: 200
+  note: 0 results

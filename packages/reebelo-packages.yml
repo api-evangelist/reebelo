@@ -1,0 +1,81 @@
+generated: '2026-08-26'
+method: searched
+source: npm, PyPI, RubyGems, GitHub registry + org searches
+package_count: 0
+official_sdk_count: 0
+summary: >-
+  Reebelo publishes no client libraries. There is no first-party SDK on any public
+  registry, no GitHub organization, and no SDK or code-sample section in the Custom API
+  documentation. Vendors integrate either by calling the REST endpoints directly, by
+  hosting CSV feeds, or through a third-party channel-management platform that has
+  built its own Reebelo connector.
+packages: []
+registries_searched:
+- registry: npm
+  query: reebelo
+  url: https://registry.npmjs.org/-/v1/search?text=reebelo
+  status: 200
+  results: 0
+- registry: PyPI
+  query: reebelo
+  url: https://pypi.org/pypi/reebelo/json
+  status: 404
+  results: 0
+- registry: RubyGems
+  query: reebelo
+  url: https://rubygems.org/api/v1/gems/reebelo.json
+  status: 404
+  results: 0
+- registry: GitHub organizations
+  query: reebelo
+  url: https://api.github.com/orgs/reebelo
+  status: 404
+  results: 0
+  note: >-
+    No Reebelo GitHub organization exists. A GitHub repository search for "reebelo"
+    returns 35 repositories, all of which are individual developers' interview
+    take-home case studies or personal accounts — none is first-party.
+third_party_connectors:
+  note: >-
+    Not Reebelo packages and NOT counted above. Recorded because they are the de facto
+    integration path for most Reebelo vendors, and because they are third-party
+    products whose Reebelo support is maintained by the platform vendor, not Reebelo.
+  connectors:
+  - name: Sellercloud
+    url: https://sellercloud.com/integrations/reebelo/
+    official: false
+  - name: ChannelEngine
+    url: https://support.channelengine.com/hc/en-us/articles/23773685387933-Reebelo-marketplace-guide
+    official: false
+  - name: Goflow
+    url: https://goflow.com/integrations/reebelo
+    official: false
+  - name: Linnworks
+    official: false
+    note: >-
+      Reebelo publishes its own Linnworks setup guide at
+      https://cobalt.reebelo.com/documentation/linnworks and ships a Reebelo
+      application into the Linnworks app catalogue, so this connector is Reebelo-built
+      even though it is distributed on Linnworks' platform rather than a package
+      registry.
+  - name: Shopify
+    official: false
+    note: >-
+      Reebelo documents a Shopify connector setup at
+      https://cobalt.reebelo.com/documentation/shopify using a custom Admin API app
+      with read_products, read_draft_orders, write_draft_orders and read_orders scopes.
+      Reebelo consumes the vendor's Shopify store; it does not publish a Shopify app of
+      its own to the public app store.
+  - name: Magento
+    official: false
+    note: Reebelo publishes setup steps at https://cobalt.reebelo.com/documentation/magento
+  - name: Neto / Maropost Commerce Cloud
+    official: false
+    note: Reebelo publishes setup steps at https://cobalt.reebelo.com/documentation/neto
+gaps:
+- >-
+  No SDK in any language, so every integrator hand-rolls HTTP calls, request signing
+  (a single header) and pagination.
+- >-
+  No public repository of any kind means no issue tracker, no versioned client, and no
+  community-visible changelog.

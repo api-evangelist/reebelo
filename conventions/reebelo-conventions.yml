@@ -1,0 +1,200 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+summary: >-
+  Cross-cutting runtime semantics for Reebelo's seller-facing vendor API, read from
+  the published Custom API integration reference. The API is a small, flat REST
+  surface over two resources (offers and orders) with query-string pagination, a
+  natural-key upsert for writes, and a request-correlation id on the write path.
+auth:
+  style: static API key in x-api-key header
+  detail: authentication/reebelo-authentication.yml
+base_url:
+  production: https://a.reebelo.com
+  staging: https://a.reebelo.blue
+content_type:
+  request: application/json
+  response: application/json
+idempotency:
+  supported: true
+  mechanism: natural-key-upsert + idempotent HTTP verbs
+  idempotency_key_header: null
+  detail: >-
+    Reebelo publishes no Idempotency-Key header. Retry safety instead comes from the
+    shape of the write surface: POST sockets/offers/update is an upsert keyed on the
+    vendor's own sku, and the response explicitly reports a repeated call as a no-op
+    by returning the SKU under skippedOffers with reason "unchanged" ("values match
+    what we already have on file"). The two order write endpoints use PUT with
+    full-replacement semantics (sockets/orders/track and sockets/orders/imei both
+    take the complete carrier/tracking/IMEI state for an order), so replaying them
+    converges rather than duplicating.
+  safe_to_retry:
+  - operation: POST sockets/offers/update
+    reason: upsert on sku; repeat returns skippedOffers[].reason = "unchanged"
+  - operation: PUT sockets/orders/track
+    reason: PUT full replacement of carrier + trackingNumber for an order
+  - operation: PUT sockets/orders/imei
+    reason: PUT full replacement of imeiNumbers per line item
+  caveats:
+  - >-
+    "unchanged" is a comparison against stored state, not a replay-detection record —
+    a retry that carries different values will be applied, not deduplicated. There is
+    no server-side request-deduplication window.
+  - >-
+    The invoice presigned-URL endpoint (POST cobalt/orders/{orderNumber}/invoices/upload-url)
+    mints a new signed URL per call; repeated calls are not documented as idempotent.
+pagination:
+  style: page-number
+  params:
+  - name: page
+    default: 1
+    description: 1-indexed page number
+  - name: pageSize
+    default: 20
+    max: 50
+    min: 1
+    description: >-
+      Documented examples use pageSize=20. The Cobalt gateway schema shipped in the
+      client bundle constrains pageSize to min 1, max 50, default 20.
+  applies_to:
+  - GET sockets/offers
+  - GET sockets/orders
+  response_fields: not documented for the sockets/* surface
+sorting:
+  param: sortBy
+  applies_to:
+  - GET sockets/orders
+  values:
+  - orderDate-desc
+  - orderDate-asc
+  - fulfillmentDate-desc
+  - fulfillmentDate-asc
+  - dispatchDate-desc
+  - dispatchDate-asc
+  default: orderDate-desc
+filtering:
+  search:
+    param: search
+    description: >-
+      Single free-text lookup parameter reused across both collections — search=<sku>
+      on sockets/offers to retrieve one offer, search=<orderNumber> on sockets/orders
+      to retrieve one order. There is no separate /{id} path for either resource.
+  time_range:
+    params:
+    - from
+    - until
+    format: ISO 8601 without timezone offset in the published example
+    example: from=2024-02-13T11:00:00until=2024-02-13T12:00:00
+    note: >-
+      The documented example string is missing the & separator between from and until
+      (…T11:00:00until=…). Recorded verbatim as published; an integrator should assume
+      &until=.
+    applies_to:
+    - GET sockets/orders
+field_expansion:
+  supported: false
+metadata:
+  supported: false
+request_id_tracing:
+  supported: true
+  field: requestId
+  location: response body
+  applies_to:
+  - POST sockets/offers/update
+  description: >-
+    "requestId — API Gateway request ID. Include this when reporting issues so we can
+    trace the request in our logs." A correlation id is returned in the offers-update
+    response body; no X-Request-Id response header is documented, and no request id is
+    documented on the read endpoints.
+versioning:
+  scheme: none
+  detail: >-
+    No version segment in the path, no version header, and no documented version
+    negotiation. Paths are unversioned (sockets/offers, sockets/orders). See
+    lifecycle/reebelo-lifecycle.yml.
+error_envelope:
+  style: per-item result partition (not RFC 9457)
+  problem_json: false
+  detail: >-
+    The offers-update endpoint does not fail the whole batch. It returns three parallel
+    arrays partitioning the submitted SKUs — updatedOffers, skippedOffers and
+    failedOffers — each carrying the sku and, for the latter two, a machine-readable
+    reason string. Transport-level failures on the API Gateway edge return a bare
+    {"message": "..."} JSON object. See errors/reebelo-error-codes.yml.
+rate_limit_signaling:
+  headers: none documented
+  status_on_exhaustion: not documented
+  detail: see rate-limits/reebelo-rate-limits.yml
+dry_run_mode:
+  supported: false
+  detail: No preview, validate-only, or simulate parameter is documented on any write endpoint.
+reversibility:
+  grade: none
+  summary: >-
+    Reebelo explicitly documents the ABSENCE of a programmatic reversal path for its
+    highest-consequence write. There is no cancel, void, refund or replacement
+    operation in the vendor API, and the documentation says so in plain language
+    rather than leaving it unstated.
+  write_surfaces:
+  - operation: POST sockets/offers/update
+    action: create or update an offer's name, price, stock and minPrice
+    reversal: re-submit the prior values
+    reversal_operation: POST sockets/offers/update
+    window: unbounded
+    grade: documented
+    note: >-
+      Reversal is possible only because the write is a full upsert on the vendor's own
+      sku — the caller can restore the previous state by sending it again. Reebelo
+      publishes no undo, no version history and no restore endpoint, so the burden of
+      retaining the prior values is entirely on the integrator. No window is stated
+      because none applies.
+  - operation: PUT sockets/orders/track
+    action: attach carrier and trackingNumber to an order
+    reversal: overwrite with corrected values
+    reversal_operation: PUT sockets/orders/track
+    window: not stated
+    grade: documented
+    note: >-
+      PUT semantics allow a correction, but no delete/clear operation is documented and
+      no window is published for how late a tracking correction is accepted.
+  - operation: PUT sockets/orders/imei
+    action: record IMEI numbers against order line items
+    reversal: overwrite with corrected values
+    reversal_operation: PUT sockets/orders/imei
+    window: not stated
+    grade: documented
+  - operation: order cancellation / replacement
+    action: cancel or replace a placed order
+    reversal: none — no API exists
+    reversal_operation: null
+    window: null
+    grade: none
+    note: >-
+      Quoted verbatim from the Reebelo documentation: "If an order is canceled from the
+      vendor side or from Reebelo side. Both parties need to get in touch to solve the
+      case. There is not yet a general API integration for cancelations or
+      replacements." Cancellation and replacement are an out-of-band human process
+      between the vendor and Reebelo.
+  - operation: POST cobalt/orders/{orderNumber}/invoices/upload-url + PUT signedUrl
+    action: upload a seller invoice PDF against an order
+    reversal: none documented
+    reversal_operation: null
+    window: null
+    grade: none
+    note: No delete or replace operation for an uploaded invoice is documented.
+  agent_guidance: >-
+    An agent operating this API can safely retry every documented write, but must treat
+    order cancellation and replacement as OUT OF SCOPE — Reebelo states there is no API
+    for it. Before repricing or restocking an offer, capture the current values from
+    GET sockets/offers, because that read is the only way to reconstruct prior state.
+cross_references:
+  authentication: authentication/reebelo-authentication.yml
+  errors: errors/reebelo-error-codes.yml
+  lifecycle: lifecycle/reebelo-lifecycle.yml
+  rate_limits: rate-limits/reebelo-rate-limits.yml
+  webhooks: asyncapi/reebelo-webhooks.yml
+  sandbox: sandbox/reebelo-sandbox.yml
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200

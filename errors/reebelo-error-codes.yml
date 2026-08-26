@@ -1,0 +1,94 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+format: proprietary
+rfc9457: false
+summary: >-
+  Reebelo publishes no central error-code reference. What it does publish is a
+  per-item result partition on the offers-update endpoint, where every submitted SKU
+  comes back in exactly one of three arrays with a machine-readable reason string.
+  That reason vocabulary is the only enumerated error surface Reebelo documents, and
+  it is captured verbatim below. Transport-level failures are surfaced by AWS API
+  Gateway rather than by Reebelo.
+envelope:
+  style: result partition
+  applies_to: POST sockets/offers/update
+  example_shape:
+    updatedOffers:
+    - sku: <string>
+    skippedOffers:
+    - sku: <string>
+      reason: <enum>
+    failedOffers:
+    - sku: <string>
+      reason: <enum>
+    requestId: <string>
+  fields:
+  - name: updatedOffers
+    description: SKUs whose price/stock/minPrice were propagated to Reebelo.
+  - name: skippedOffers
+    description: No action taken. Carries a reason.
+  - name: failedOffers
+    description: Update could not be processed. Carries a reason.
+  - name: requestId
+    description: >-
+      API Gateway request ID. Reebelo instructs callers to include this when reporting
+      issues so the request can be traced in Reebelo's logs.
+reasons:
+- code: unchanged
+  array: skippedOffers
+  meaning: Values match what Reebelo already has on file.
+  retryable: false
+  action: >-
+    None. This is the success case for a replayed or no-op update; treat it as
+    idempotent confirmation, not an error.
+- code: vendor_deactivated
+  array: skippedOffers
+  meaning: The vendor account is currently disabled.
+  retryable: false
+  action: >-
+    Contact Reebelo. Documented verbatim as "(the vendor account is currently disabled
+    — contact Reebelo)". Retrying will not clear this; it requires account
+    reactivation by Reebelo.
+- code: internal_error
+  array: failedOffers
+  meaning: Transient server-side failure.
+  retryable: true
+  action: >-
+    Safe to retry. Documented verbatim as "(transient server-side failure, safe to
+    retry; if persistent, share the requestId with Reebelo support)". On persistent
+    failure, escalate to Reebelo support with the requestId from the same response.
+transport_errors:
+  source: AWS API Gateway (a.reebelo.com), not Reebelo application code
+  observed:
+  - status: 403
+    body: '{"message":"Forbidden"}'
+    meaning: >-
+      Returned for a matched route without a valid x-api-key. Observed on every
+      unauthenticated probe of https://a.reebelo.com/ and its /.well-known/* paths.
+  - status: 403
+    body: '{"message":"Missing Authentication Token"}'
+    meaning: >-
+      API Gateway's response for an unmatched route. Note this is a 403 and not a 404 —
+      an integrator cannot distinguish a wrong path from a missing credential by status
+      code alone.
+  note: >-
+    No WWW-Authenticate header, no RFC 9457 problem+json, and no application error body
+    on the transport path.
+gaps:
+- >-
+  No documented error vocabulary at all for the four read/write order endpoints
+  (sockets/offers GET, sockets/orders GET, sockets/orders/track, sockets/orders/imei) —
+  validation failure behaviour on those is unpublished.
+- >-
+  No documented status codes anywhere in the reference. The published examples show
+  request shapes and success response bodies only.
+- >-
+  Reebelo publishes no HTTP status code for the reason enum above; the partition is
+  returned inside what is presumably a 200.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200
+- url: https://a.reebelo.com/
+  status: 403

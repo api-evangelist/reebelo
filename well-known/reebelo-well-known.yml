@@ -1,0 +1,65 @@
+generated: '2026-08-26'
+method: probed
+source: live HTTPS probes of /.well-known/* on every Reebelo host
+note: >-
+  No /.well-known document is served on any Reebelo host. cobalt.reebelo.com is a
+  single-page Vite/React application whose catch-all route answers HTTP 200 with the
+  application HTML shell for every unmatched path, including all /.well-known/*
+  paths — these are SPA shells, not documents, and are recorded as misses. The API
+  host a.reebelo.com is an AWS API Gateway that rejects unauthenticated requests
+  with 403 {"message":"Forbidden"}. No WellKnown or SecurityTxt pointer is emitted
+  in apis.yml because no path returned a real document.
+hosts:
+- host: reebelo.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: cobalt.reebelo.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    note: SPA shell (text/html), not a document — miss
+  - path: /.well-known/openid-configuration
+    status: 200
+    note: SPA shell (text/html), not a document — miss
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    note: SPA shell (text/html), not a document — miss
+  - path: /.well-known/api-catalog
+    status: 200
+    note: SPA shell (text/html), not a document — miss
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    note: SPA shell (text/html), not a document — miss
+  - path: /.well-known/agent-card.json
+    status: 200
+    note: SPA shell (text/html), not an AgentCard — miss
+  - path: /.well-known/agent.json
+    status: 200
+    note: SPA shell (text/html), not an AgentCard — miss
+- host: a.reebelo.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/openid-configuration
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/ai-plugin.json
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403

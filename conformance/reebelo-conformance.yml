@@ -1,0 +1,141 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  https://cobalt.reebelo.com/documentation/custom-api plus live probes of
+  reebelo.com, cobalt.reebelo.com and a.reebelo.com
+api: Reebelo Vendor Integration API (Cobalt)
+summary: >-
+  Assessed against cross-cutting API standards and against the retail/e-commerce
+  domain standards a marketplace of this shape could plausibly declare. Reebelo
+  declares none of them in its contract. The API is a plain JSON-over-HTTP surface
+  with a static header key; it is standards-light rather than standards-divergent.
+conformance:
+- id: openapi
+  conforms: false
+  evidence: >-
+    No OpenAPI or Swagger document is served. Probed /openapi.json, /openapi.yaml,
+    /swagger.json, /v1/openapi.json, /api-docs, /docs and /redoc on reebelo.com (404),
+    cobalt.reebelo.com (200 SPA shell — not a spec) and a.reebelo.com (403).
+- id: asyncapi
+  conforms: false
+  evidence: >-
+    An event surface exists (Reebelo POSTs orders to a vendor-hosted endpoint) but no
+    AsyncAPI document is published. See asyncapi/reebelo-webhooks.yml.
+- id: graphql
+  conforms: false
+  evidence: No /graphql surface is referenced in the documentation or the client bundle.
+- id: oauth2
+  conforms: false
+  evidence: >-
+    Authentication is a static x-api-key header. No authorization server, no token
+    endpoint, and /.well-known/oauth-authorization-server misses on every host.
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on reebelo.com and 403 on a.reebelo.com.
+- id: rfc9457
+  conforms: false
+  evidence: >-
+    Errors are not application/problem+json. The offers-update endpoint returns a
+    proprietary three-array result partition; the API Gateway edge returns bare
+    {"message": "..."} objects.
+- id: rfc8594
+  conforms: false
+  evidence: No Sunset or Deprecation headers documented or observed.
+- id: rfc9116
+  conforms: false
+  evidence: >-
+    No /.well-known/security.txt on any Reebelo host — 404 on reebelo.com, SPA shell on
+    cobalt.reebelo.com, 403 on a.reebelo.com.
+- id: pagination
+  conforms: true
+  evidence: >-
+    Page-number pagination with page and pageSize on GET sockets/offers and GET
+    sockets/orders; pageSize documented at default 20, bounded 1-50. Documented at
+    https://cobalt.reebelo.com/documentation/custom-api
+- id: idempotency
+  conforms: partial
+  evidence: >-
+    No Idempotency-Key header. Retry safety is structural: POST sockets/offers/update is
+    an upsert on the vendor SKU and reports a replayed call as skippedOffers[].reason =
+    "unchanged"; the two order writes use PUT with full-replacement semantics. See
+    conventions/reebelo-conventions.yml.
+- id: rate_limit_headers
+  conforms: false
+  evidence: >-
+    No RateLimit-*, X-RateLimit-* or Retry-After headers documented. See
+    rate-limits/reebelo-rate-limits.yml.
+- id: rest
+  conforms: partial
+  evidence: >-
+    Resource-oriented paths and correct use of GET/POST/PUT, but no /{id} sub-resources
+    (single-record lookup is a `search` query parameter on the collection), no
+    hypermedia, and no versioning.
+- id: json
+  conforms: true
+  evidence: 'Documented request and response content-type is application/json throughout.'
+- id: tls
+  conforms: true
+  evidence: >-
+    TLSv1.3 on reebelo.com, cobalt.reebelo.com and a.reebelo.com. HSTS present on
+    reebelo.com with max-age 63072000. See security/reebelo-domain-security.yml.
+domain_standards:
+  market: retail / e-commerce marketplace / refurbished consumer electronics
+  assessed:
+  - id: gs1-gtin
+    conforms: false
+    evidence: >-
+      The product feed and offer payload are keyed on a vendor-chosen free-text SKU
+      ("testingsku", "IP11-BLACK-128-GradeB"). No GTIN, EAN, UPC or other GS1
+      identifier field appears in any documented payload.
+  - id: gs1-epcis
+    conforms: false
+    evidence: No supply-chain event vocabulary; the only event is a Shopify-shaped order forward.
+  - id: edi-x12
+    conforms: false
+    evidence: >-
+      No 850/856/810 or any EDI transaction set is referenced. Order, shipment and
+      invoice exchange are all bespoke JSON or CSV.
+  - id: schema-org-product
+    conforms: false
+    evidence: >-
+      No structured product vocabulary in the API. Device attributes (model, colour,
+      storage, grade) are encoded positionally inside a single `name` string rather than
+      as typed fields.
+  - id: gsma-imei
+    conforms: partial
+    evidence: >-
+      The API carries IMEI numbers as first-class data (PUT sockets/orders/imei, and
+      imeiNumbers[] per order line item, example "350750724344136"). IMEI is a
+      GSMA/3GPP-allocated device identifier, so Reebelo is transporting a real domain
+      identifier — but it declares no checksum rule, no TAC validation and no
+      conformance statement, so this is identifier USE rather than standard conformance.
+  note: >-
+    REWARD-ONLY dimension. Reebelo's market does have applicable standards (GS1 GTIN for
+    product identity, GSMA IMEI for device identity), and it declares none of them in the
+    contract. No conformance is asserted that the contract does not support.
+de_facto_conventions:
+- id: shopify-order-resource
+  detail: >-
+    The forwarded order webhook payload is a Shopify Admin REST Order document, and
+    Reebelo links to Shopify's own resource documentation
+    (https://shopify.dev/api/admin-rest/2021-10/resources/order) as the authoritative
+    field reference. This is an ecosystem convention borrowed from a vendor platform, not
+    a published standard, and it pins Reebelo's payload to a dated Shopify API version
+    (2021-10).
+- id: jsonpath
+  detail: >-
+    Reebelo documents the order payload by JSONPath expressions ($.name, $.line_items[],
+    $.total_price, $.shipping_address) rather than by schema.
+certifications:
+  published: none
+  detail: >-
+    No trust centre, no SOC 2 / ISO 27001 / PCI DSS claim, and no compliance page found
+    on any Reebelo host. probe-security-programs.py returned vdp=none trust=none. No
+    Compliance or TrustCenter pointer is emitted.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200
+- url: https://a.reebelo.com/openapi.json
+  status: 403
+- url: https://reebelo.com/.well-known/security.txt
+  status: 404

@@ -1,0 +1,78 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+summary: >-
+  Reebelo publishes no API lifecycle policy of any kind. There is no version scheme, no
+  changelog, no deprecation or sunset policy, no SLA and no status page. The Custom API
+  reference is undated and unversioned, so an integrator has no way to detect that it
+  has changed other than by observing a break in production.
+versioning:
+  scheme: none
+  in_path: false
+  in_header: false
+  detail: >-
+    Endpoint paths carry no version segment (sockets/offers, sockets/orders,
+    sockets/orders/track, sockets/orders/imei). No Accept-version, API-Version or
+    similar header is documented. There is no published current version number.
+changelog:
+  published: false
+  url: null
+  detail: >-
+    No changelog, release-notes or what's-new page exists on cobalt.reebelo.com or
+    reebelo.com. The documentation SPA exposes only seven routes
+    (/documentation/home, /custom-api, /csv-feed, /shopify, /linnworks, /magento,
+    /neto) and none is a changelog.
+deprecation_policy:
+  published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  detail: >-
+    No deprecation policy, no notice period, and no RFC 8594 Sunset/Deprecation header
+    is documented or observed.
+status_page:
+  published: false
+  url: null
+  probed:
+  - url: https://status.reebelo.com/
+    status: 000
+    note: DNS does not resolve — no status subdomain exists.
+sla:
+  published_for_api: false
+  detail: >-
+    Reebelo requires VENDORS to meet Reebelo's service level agreements as a condition
+    of selling, but publishes no availability or latency commitment of its own for the
+    API. The SLA obligation runs one way.
+support:
+  channel: email
+  contacts:
+  - support@reebelo.com
+  help_center: https://help.reebelo.com/hc/en-us
+  api_escalation: >-
+    For API faults Reebelo instructs callers to share the requestId returned in the
+    offers-update response body with Reebelo support.
+deprecated_operations: []
+known_lifecycle_signals:
+- signal: undocumented cancellation/replacement gap
+  detail: >-
+    Reebelo describes the missing cancellation API as "not YET a general API
+    integration", which reads as planned rather than declined, but no roadmap or date
+    is published.
+- signal: staging environment
+  detail: >-
+    A parallel .blue environment (a.reebelo.blue / cobalt.reebelo.blue) is published
+    and live, implying a promotion path, but no release process or environment-parity
+    statement accompanies it.
+gaps:
+- >-
+  Unversioned paths plus no changelog means any breaking change reaches integrators
+  silently. This is the highest-risk operational gap in Reebelo's developer surface.
+- >-
+  No status page means a vendor cannot distinguish a Reebelo outage from their own
+  fault, and has no channel other than email.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200
+- url: https://status.reebelo.com/
+  status: 000

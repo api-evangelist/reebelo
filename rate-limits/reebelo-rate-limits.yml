@@ -1,0 +1,60 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+limit_count: 0
+summary: >-
+  Reebelo publishes no rate limits for its vendor API. The Custom API reference
+  documents request shapes, headers and response bodies but states no per-key,
+  per-account or per-endpoint quota, no window, no burst allowance, no 429 behaviour
+  and no rate-limit response headers. The only quantitative ceiling Reebelo publishes
+  is a pagination bound, which is a page-size cap rather than a rate limit.
+limits: []
+response_headers:
+  documented: []
+  note: >-
+    No X-RateLimit-*, RateLimit-* or Retry-After headers appear anywhere in the
+    published reference.
+status_on_exhaustion: not documented
+pagination_ceiling:
+  param: pageSize
+  max: 50
+  default: 20
+  applies_to:
+  - GET sockets/offers
+  - GET sockets/orders
+  note: >-
+    A page-size bound, not a rate limit. Recorded here because it is the only published
+    number that constrains how much an integrator can pull per call, and it means a
+    full catalogue or order-history sync is necessarily paginated.
+crawl_cadences:
+  note: >-
+    For the hosted-CSV alternative to the API, Reebelo publishes the cadence at which
+    IT polls the vendor, which is the inverse of a rate limit but is the only published
+    frequency figure. Recorded for completeness.
+  cadences:
+  - feed: product feed (CSV)
+    frequency: every 30 minutes
+    adjustable: true
+    note: '"It can be ajusted depending on the frequency of the vendor stock update."'
+  - feed: tracking feed (CSV)
+    frequency: daily at 6pm local time (documented as 6pm AEST elsewhere on the page)
+    adjustable: true
+third_party_reports:
+  note: >-
+    Not a Reebelo-published limit. Recorded separately so it is never mistaken for one.
+  observations:
+  - source: https://help.sellercloud.com/omnichannel-ecommerce/reebelo-api-account-integration/
+    detail: >-
+      Sellercloud's Reebelo connector exposes a "Time delay(sec) between two subsequent
+      calls" setting defaulting to 10 seconds, described as preventing API throttling.
+      This implies an undocumented throttle exists in practice, but the figure is
+      Sellercloud's own client-side default, not a Reebelo-published limit.
+gaps:
+- >-
+  An agent integrating this API cannot determine its budget before calling, cannot
+  detect approaching exhaustion at runtime, and has no published backoff signal. This
+  is the single largest runtime-semantics gap in Reebelo's developer surface.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200

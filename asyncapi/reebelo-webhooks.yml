@@ -1,0 +1,95 @@
+generated: '2026-08-26'
+method: searched
+source: https://cobalt.reebelo.com/documentation/custom-api
+api: Reebelo Vendor Integration API (Cobalt)
+asyncapi_spec: none published
+summary: >-
+  Reebelo operates an inverted webhook model. Rather than the vendor registering a
+  subscription with Reebelo through an API, Reebelo asks the vendor to supply an HTTP
+  endpoint URL out of band, and Reebelo POSTs each new order to it. Reebelo explicitly
+  suggests no-code tooling for vendors without engineering capacity. This is the only
+  event surface Reebelo publishes; there is no AsyncAPI document, no streaming
+  endpoint, and no event catalogue beyond the single order-forward payload.
+delivery_model: provider-push to vendor-hosted endpoint
+subscription_management:
+  api: none
+  method: >-
+    Out of band. Documented verbatim as "vendor to provide the endpoint URL" — the URL
+    is handed to Reebelo rather than registered through a call.
+  self_service: false
+events:
+- name: Forward Order
+  id: order.forwarded
+  trigger: A new order is placed on Reebelo against the vendor's offers.
+  direction: Reebelo -> vendor
+  transport: HTTP
+  method: POST
+  endpoint: vendor-supplied URL
+  content_type: application/json
+  payload_shape: >-
+    Shopify Order resource shape. Reebelo documents the payload by JSONPath annotation
+    against a sample order and links to Shopify's Admin REST Order resource as the
+    "full documentation of the order".
+  payload_fields:
+  - jsonpath: $.name
+    description: Reebelo order name, formatted "#Axxxxx" (e.g. "#A12345")
+  - jsonpath: $.line_items[]
+    description: Ordered line items
+  - jsonpath: $.line_items[].sku
+    description: Vendor SKU
+  - jsonpath: $.line_items[].quantity
+    description: Quantity ordered
+  - jsonpath: $.line_items[].price
+    description: Unit price
+  - jsonpath: $.total_line_items_price
+    description: Line-item total before discount
+  - jsonpath: $.total_price
+    description: Order total
+  - jsonpath: $.shipping_address
+    description: Destination shipping address
+  reference: https://shopify.dev/api/admin-rest/2021-10/resources/order
+security:
+  signature_verification: none documented
+  hmac: none documented
+  mtls: false
+  note: >-
+    Reebelo publishes no signing secret, no signature header and no verification
+    procedure for the forwarded order payload. A vendor endpoint has no documented way
+    to authenticate that a POST genuinely originated from Reebelo. This is a material
+    gap for a surface that carries customer shipping addresses.
+delivery_guarantees:
+  retries: not documented
+  ordering: not documented
+  deduplication: not documented
+  timeout: not documented
+  expected_response: not documented
+alternatives:
+  note: >-
+    Reebelo offers a polling alternative for vendors who cannot host an endpoint.
+  options:
+  - name: hosted CSV tracking feed
+    direction: vendor -> Reebelo (pull)
+    detail: >-
+      Vendor hosts a CSV of reebelo_order_name/reebelo_order_id, carrier and tracking
+      number; Reebelo crawls it daily at 6pm local time.
+  - name: hosted CSV product feed
+    direction: vendor -> Reebelo (pull)
+    detail: >-
+      Vendor hosts a CSV of sku, name, stock and price; Reebelo crawls it every 30
+      minutes.
+  - name: no-code relay
+    detail: >-
+      Documented verbatim: "If the vendor does not have technical ressource to create
+      the endpoint, he/she can use some no-code tools like Zapier or Integromat."
+not_covered:
+  note: >-
+    Reebelo documents that no event or API exists for these, rather than leaving them
+    unstated.
+  items:
+  - >-
+    Order cancellation and replacement — "There is not yet a general API integration
+    for cancelations or replacements." Handled by direct contact between vendor and
+    Reebelo.
+evidence:
+- url: https://cobalt.reebelo.com/documentation/custom-api
+  status: 200

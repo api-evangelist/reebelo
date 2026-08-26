@@ -1,0 +1,57 @@
+generated: '2026-08-26'
+method: searched
+source: https://help.reebelo.com/hc/en-us/articles/15274637112217-I-am-interested-to-be-a-vendor-Who-do-I-contact
+plan_count: 0
+summary: >-
+  Reebelo publishes no pricing for its vendor programme or its API. There is no plans
+  page, no tier table, no free tier and no self-service signup anywhere on reebelo.com
+  or cobalt.reebelo.com. Reebelo's own help centre answers the question "I am
+  interested to be a vendor. Who do I contact?" by directing prospective sellers to
+  email support@reebelo.com with their company details — the vendor programme is a
+  sales-gated relationship, and API access is a downstream consequence of being
+  accepted as a vendor rather than a separately priced product.
+plans: []
+access_model:
+  self_service: false
+  free_tier: false
+  api_priced_separately: false
+  detail: >-
+    The API carries no price of its own. A vendor accepted onto the marketplace is
+    issued an x-api-key by their Reebelo account manager; there is no metering, no
+    quota tier and no published overage on API calls.
+  signup_path:
+    method: email
+    contact: support@reebelo.com
+    url: https://help.reebelo.com/hc/en-us/articles/15274637112217-I-am-interested-to-be-a-vendor-Who-do-I-contact
+  console: https://cobalt.reebelo.com/
+buyer_side_note: >-
+  Reebelo's consumer storefront prices are per-device and dynamic; they are product
+  prices, not API or programme plans, and are deliberately not modelled here.
+third_party_reports:
+  note: >-
+    NOT Reebelo-published and NOT counted in plan_count. Recorded so the figure is
+    traceable and never mistaken for a first-party source.
+  observations:
+  - source: https://support.channelengine.com/hc/en-us/articles/23773685387933-Reebelo-marketplace-guide
+    fetched_status: 403
+    detail: >-
+      ChannelEngine's Reebelo marketplace guide describes no setup fee, a fixed monthly
+      fee of USD 99.00, and a sales commission of 10-15% depending on product category,
+      plus seller-metric and SLA eligibility requirements. This was surfaced via search
+      result summary; the page itself returned 403 to our fetch, so the figures are
+      recorded as an unverified third-party report.
+requirements_reported:
+- healthy seller metrics on other sales channels
+- ability to source inventory in Reebelo's categories
+- ability to meet Reebelo's service level agreements
+evidence:
+- url: https://reebelo.com/sell-on-reebelo
+  status: 404
+- url: https://reebelo.com/partners
+  status: 404
+- url: https://reebelo.com/become-a-seller
+  status: 404
+- url: https://cobalt.reebelo.com/documentation/home
+  status: 200
+- url: https://support.channelengine.com/hc/en-us/articles/23773685387933-Reebelo-marketplace-guide
+  status: 403
