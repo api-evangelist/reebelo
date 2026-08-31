@@ -38,6 +38,17 @@ tags:
 - Circular Economy
 - Retail
 - Inventory
+- Order
+- Seller Integration
+tags_raw:
+- Refurbished Electronics
+- Marketplace
+- E-Commerce
+- Consumer Electronics
+- Reverse Logistics
+- Circular Economy
+- Retail
+- Inventory
 - Orders
 - Seller Integration
 apis:
@@ -55,6 +66,12 @@ apis:
   humanURL: https://cobalt.reebelo.com/documentation/custom-api
   baseURL: https://a.reebelo.com
   tags:
+  - Offers
+  - Order
+  - Tracking
+  - Inventory
+  - Invoices
+  tags_raw:
   - Offers
   - Orders
   - Tracking
