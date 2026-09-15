@@ -1,16 +1,14 @@
 aid: reebelo
 name: Reebelo
-description: 'Reebelo is a marketplace for certified refurbished consumer technology
-  — smartphones, laptops, tablets, smartwatches, gaming and home electronics — sold
-  by a vetted network of third-party refurbishers at up to 70% below new, with a
-  12-month warranty and a 30-day trial. Founded in 2019 and operating in the United
-  States, Australia, New Zealand and Singapore, Reebelo positions refurbished tech
-  as the sustainable alternative to new-device purchase. Its developer surface is
-  seller-facing rather than buyer-facing: the Cobalt vendor back-office publishes a
-  REST integration API on https://a.reebelo.com that lets a refurbisher list and
-  reprice offers, pull orders, push carrier tracking and IMEI numbers, and upload
-  seller invoices, alongside hosted-CSV feed and order-forwarding webhook
-  alternatives for vendors without API resources.'
+description: 'Reebelo is a marketplace for certified refurbished consumer technology — smartphones, laptops,
+  tablets, smartwatches, gaming and home electronics — sold by a vetted network of third-party refurbishers
+  at up to 70% below new, with a 12-month warranty and a 30-day trial. Founded in 2019 and operating in
+  the United States, Australia, New Zealand and Singapore, Reebelo positions refurbished tech as the sustainable
+  alternative to new-device purchase. Its developer surface is seller-facing rather than buyer-facing:
+  the Cobalt vendor back-office publishes a REST integration API on https://a.reebelo.com that lets a
+  refurbisher list and reprice offers, pull orders, push carrier tracking and IMEI numbers, and upload
+  seller invoices, alongside hosted-CSV feed and order-forwarding webhook alternatives for vendors without
+  API resources.'
 deliveryModel:
   model: saas
   open_source: false
@@ -68,17 +66,15 @@ tags_raw:
 - Orders
 - Seller Integration
 apis:
-- aid: reebelo-vendor-api
+- aid: reebelo:reebelo-vendor-api
   name: Reebelo Vendor Integration API (Cobalt)
-  description: 'The seller-side REST API behind Reebelo''s Cobalt vendor back-office.
-    Authenticated with a Reebelo-issued x-api-key header, it exposes offer
-    management (list offers, look up an offer by SKU, create/update offers with
-    price, stock and minimum price), order retrieval (paged and sorted, with
-    orderDate/fulfillmentDate/dispatchDate ranges), order tracking updates (carrier
-    and tracking number), IMEI capture per line item, and a presigned-URL flow for
-    uploading seller invoice PDFs. Reebelo also forwards new orders to a
-    vendor-hosted webhook endpoint, and offers hosted-CSV product and tracking
-    feeds as a no-API alternative.'
+  description: The seller-side REST API behind Reebelo's Cobalt vendor back-office. Authenticated with
+    a Reebelo-issued x-api-key header, it exposes offer management (list offers, look up an offer by SKU,
+    create/update offers with price, stock and minimum price), order retrieval (paged and sorted, with
+    orderDate/fulfillmentDate/dispatchDate ranges), order tracking updates (carrier and tracking number),
+    IMEI capture per line item, and a presigned-URL flow for uploading seller invoice PDFs. Reebelo also
+    forwards new orders to a vendor-hosted webhook endpoint, and offers hosted-CSV product and tracking
+    feeds as a no-API alternative.
   humanURL: https://cobalt.reebelo.com/documentation/custom-api
   baseURL: https://a.reebelo.com
   tags:
@@ -164,12 +160,10 @@ x-enrichment:
 x-coverage:
   state: covered
   reason: no-machine-readable-spec
-  detail: >-
-    Reebelo publishes a complete, genuine REST API reference for its Cobalt vendor
-    integration, but ships it only as JSX inside the docs single-page-app JavaScript
-    bundle (cobalt.reebelo.com/assets/index.8b57822b.js) — there is no OpenAPI,
-    Swagger, GraphQL or AsyncAPI document on any Reebelo host, and the SPA answers 200
-    with an HTML shell for every /openapi.json and /.well-known/* path.
+  detail: Reebelo publishes a complete, genuine REST API reference for its Cobalt vendor integration,
+    but ships it only as JSX inside the docs single-page-app JavaScript bundle (cobalt.reebelo.com/assets/index.8b57822b.js)
+    — there is no OpenAPI, Swagger, GraphQL or AsyncAPI document on any Reebelo host, and the SPA answers
+    200 with an HTML shell for every /openapi.json and /.well-known/* path.
   evidence:
   - url: https://cobalt.reebelo.com/documentation/custom-api
     status: 200
